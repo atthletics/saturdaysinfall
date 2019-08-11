@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/profile.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+    <main class="container signup-section">
+        <div class="box col-xs-12 col-md-6 col-lg-4">
+
+            <h1>Create Squad</h1>
+            <form method="POST" action="/create_squad">
+                {{ form.hidden_tag() }}
+                <div class="form-group">
+                    {{ form.squad_name.label }}
+
+                    {% if form.squad_name.errors %}
+                        {% for error in form.squad_name.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+
+                    {{ form.squad_name }}
+                </div>
+                <div class="form-group">
+                    {{ form.squad_pwd.label }}
+
+                    {% if form.squad_pwd.errors %}
+                        {% for error in form.squad_pwd.errors %}
+                            <p class="error-message">{{ error }}</p>
+                        {% endfor %}
+                    {% endif %}
+
+                    {{ form.squad_pwd }}
+                </div>
+            {{ form.submit(class="btn-secondary") }}
+            </form>
+
+        </div>
+    </main>
+
+{% endblock %}
