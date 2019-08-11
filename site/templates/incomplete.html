@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/incomplete.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+{% endblock %}
