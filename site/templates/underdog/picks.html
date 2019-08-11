@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/upset.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 40%;
+        -moz-background-size: 40%;
+        background-size: 40%;
+        -o-background-size: 40%;
+    }
+    </style>
+
+<div class="container">
+    <div class="row">
+
+        <section class="content">
+            <h1>Picks</h1>
+
+            <div class="col-lg-3 col-left">
+                <div class="main-col">
+                    <div class="btn-group btn-block">
+                        <button id="weekDropdown" class="btn btn-secondary btn-lg btn-block dropdown-toggle" type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            Week Select
+                        <span class="caret"></span></button>
+                        <div class="dropdown-menu scrollable-menu" aria-labelledby="dropdownMenu">
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="all">Entire Season</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="{{ default }}">Current Week</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="1">Week 1</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="2">Week 2</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="3">Week 3</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="4">Week 4</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="5">Week 5</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="6">Week 6</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="7">Week 7</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="8">Week 8</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="9">Week 9</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="10">Week 10</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="11">Week 11</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="12">Week 12</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="13">Week 13</button>
+                            <button type="button" class="btn btn-default btn-filter btn-block weekSelect" data-target="14">Week 14</button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+            <div class="col-lg-9 col-right">
+                <div class="panel panel-default">
+                    <div class="panel-body">
+                        <div class="table-container">
+                            <table class="table table-filter results">
+                                <h2 id="weekHeader" style="color: #000;">Week: {{ default }}</h2>
+                                <div class="form-group pull-left">
+                                    <input type="text" class="search form-control" placeholder="Search" style="background-color: #000; padding-left: 5px;">
+                                </div>
+                                <tbody>
+                                {% for row in games %}
+
+                                    <tr data-status="{{ row.week_id }}">
+                                        {% if row.is_locked == 'Y' and row.picked == 'Y' %}
+                                            <td>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="{{ row.game_id }}" checked="checked" disabled>
+                                                    <label for="{{ row.game_id }}"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <i class="glyphicon glyphicon-lock"></i>
+                                            </td>
+                                        {% elif row.is_locked == 'Y' and row.picked == 'N' %}
+                                            <td>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="{{ row.game_id }}" disabled>
+                                                    <label for="{{ row.game_id }}"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <i class="glyphicon glyphicon-lock"></i>
+                                            </td>
+                                        {% elif row.picked == 'Y' %}
+                                            <td>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="{{ row.game_id }}" checked="checked">
+                                                    <label for="{{ row.game_id }}"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="javascript:;" class="star">
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                </a>
+                                            </td>
+                                        {% else %}
+                                            <td>
+                                                <div class="ckbox">
+                                                    <input type="checkbox" id="{{ row.game_id }}">
+                                                    <label for="{{ row.game_id }}"></label>
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <a href="javascript:;" class="star">
+                                                    <i class="glyphicon glyphicon-star"></i>
+                                                </a>
+                                            </td>
+                                        {% endif %}
+                                        <td>
+                                            <div class="media">
+                                                <div>
+                                                    <span class="media-meta pull-right">{{ row.game_dt }}<br>{{ row.game_ts }}</span>
+                                                    <h4 class="title">
+                                                        Underdog: UCLA
+                                                    </h4>
+                                                    <p class="summary">Home: {{ row.home_team }}<br>Away: {{ row.away_team }}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+    </div>
+</div>
+
+
+<script>
+
+    $(document).ready(function () {
+        $('.table tr').css('display', 'none');
+        $('.table tr[data-status="' + {{ default }} + '"]').fadeIn('slow');
+
+        $('.star').on('click', function () {
+            $(this).toggleClass('star-checked');
+            $(this).parents('tr').toggleClass('selected');
+        });
+
+        $('.ckbox label').on('click', function () {
+            $(this).parents('tr').toggleClass('selected');
+        });
+
+        $('.btn-filter').on('click', function () {
+            var $target = $(this).data('target');
+            var selectedWeek = $(this).text();
+
+            $('#weekHeader').html(selectedWeek);
+            $('#weekDropdown').html("Selected: " + selectedWeek);
+            if ($target != 'all') {
+                $('.table tr').css('display', 'none');
+                $('.table tr[data-status="' + $target + '"]').fadeIn('slow');
+            } else {
+                $('.table tr').css('display', 'none').fadeIn('slow');
+            }
+        });
+
+        $(".search").keyup(function () {
+            var searchTerm = $(".search").val();
+            var listItem = $('.results tbody').children('tr');
+            var searchSplit = searchTerm.replace(/ /g, "'):containsi('")
+
+            $.extend($.expr[':'], {'containsi': function(elem, i, match, array){
+                  return (elem.textContent || elem.innerText || '').toLowerCase().indexOf((match[3] || "").toLowerCase()) >= 0;
+              }
+            });
+
+            $(".results tbody tr").not(":containsi('" + searchSplit + "')").each(function(e){
+                $(this).attr('visible','false');
+            });
+
+            $(".results tbody tr:containsi('" + searchSplit + "')").each(function(e){
+                $(this).attr('visible','true');
+            });
+
+            var jobCount = $('.results tbody tr[visible="true"]').length;
+                $('.counter').text(jobCount + ' item');
+
+            if(jobCount == '0') {$('.no-result').show();}
+                else {$('.no-result').hide();}
+
+        });
+
+    });
+</script>
+
+
+{% endblock %}
