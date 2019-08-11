@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/profile.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+    <main class="container">
+        <div class="box col-xs-12 col-md-8">
+            <h1>Join Squad</h1>
+            <a href="{{ url_for('create_squad') }}" style="font-size: larger; color: #af0000;">Create A Squad</a><br><br>
+            <div class="table-responsive">
+                <table class="table table-bordered sif-table">
+                    <thead>
+                        <tr>
+                            <th>Squad</th>
+                            <th>Members</th>
+                            <th>Private?</th>
+                            <th>Owner</th>
+                            <th>Join</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in squads %}
+                        <tr>
+                            <td>{{ row.squad_name }}</td>
+                            <td>{{ row.members_cnt }}</td>
+                            <td>{{ row.is_private }}</td>
+                            <td>{{ row.leader }}</td>
+                            <td>
+                                <form>
+                                    <input type="hidden" name="squad_id" value="{{ row.squad_id }}">
+                                    <a href="{{ url_for('squad', squad_id=row.squad_id) }}" class="btn btn-success btn-sm btn-block">Join</a>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
