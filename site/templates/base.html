@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Welcome to the premier niche fantasy destination, @thletics. The leagues within will challenge your fantasy skills. New members are always welcome!">
+    <meta name="author" content="Chris Locklin">
+
+    <title>@thletics.com</title>
+
+    <!-- Bootstrap Core CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"
+          integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/main.css') }}" rel="stylesheet">
+
+    <!-- bootstrap 3.3.7 cdn (jquery req) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"
+            integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa"
+            crossorigin="anonymous"></script>
+
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css?family=Oswald:400|Teko:700" rel="stylesheet" type="text/css">
+
+    <!-- Swiper -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/css/swiper.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Swiper/3.4.2/js/swiper.jquery.min.js"></script>
+
+</head>
+
+<body>
+<nav class="navbar navbar-default navbar-static-top" role="navigation">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar-collapse-1">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="{{ url_for('index') }}">Saturdays In Fall</a>
+      </div>
+      <div id="navbar-collapse-1" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+            <li><a href="{{ url_for('index') }}">@thletics</a></li>
+            <li class="dropdown" style="cursor: pointer;">
+                <a class="dropdown-toggle" data-toggle="dropdown">Underdog<b class="caret"></b></a>
+                <ul class="dropdown-menu navbar-default">
+                    <li>
+                        <a href="{{ url_for('about') }}">About</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('league') }}">My Leagues</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('create_league') }}">Create League</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('join_league') }}">Join League</a>
+                    </li>
+                </ul>
+            </li>
+            {% if not session.logged_in %}
+                <li><a href="{{ url_for('signin') }}">Login</a></li>
+            {% endif %}
+            {% if session.logged_in %}
+                <li><a href="{{ url_for('profile') }}" style="color:#B22222;">{{ session['username'] }}</a></li>
+                <li><a href="{{ url_for('logout') }}">Log Out</a></li>
+            {% endif %}
+          	<li><a href="{{ url_for('help') }}">Help!</a></li>
+        </ul>
+
+      </div>
+      <!--/.nav-collapse -->
+    </div>
+<!--/.container-fluid -->
+</nav>
+
+
+    {% block content %}
+    {% endblock %}
+
+
+<footer class="footer text-center">
+    <div class="footer-default">
+        <div>
+            <p>@thletics.com | Copyright &copy; 2018<br>
+                <a href="{{ url_for('help') }}">Contact Us </a>&bull;
+                <a href="{{ url_for('privacy') }}">Privacy Policy </a>&bull;
+                <a href="{{ url_for('terms') }}">Terms of Service</a>
+            </p>
+        </div>
+    </div>
+</footer>
+
+<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
