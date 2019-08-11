@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/profile.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+    <main class="container">
+        <div class="box col-xs-12 col-md-8">
+            <h1>Squad Profile</h1>
+            <div class="table-responsive">
+                <table class="table table-bordered sif-table">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in squads %}
+                        <tr>
+                            <td>{{ row.member }}</td>
+                            <td>{{ row.username }}</td>
+                            <td>{{ row.email }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <form method="POST" action="/leave_squad">
+                    <input type="hidden" name="squad_id" value="{{ squad_id }}">
+                    <button class="btn btn-danger btn-sm btn-block" type="submit">Leave Squad</button>
+                </form>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
