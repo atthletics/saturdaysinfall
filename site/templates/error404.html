@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/help.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+
+    <main class="container signup-section">
+        <div class="box col-xs-12 col-md-6 col-lg-4">
+
+            <h1>404 Error!</h1>
+
+            {% if message %}
+                <p>
+                    {{ message }}
+                </p>
+            {% else %}
+                <p>
+                    The url are you are looking for must have gotten cut...<br>
+                    You should check out a link that is still on the roster!
+                </p>
+            {% endif %}
+
+        </div>
+    </main>
+
+{% endblock %}
