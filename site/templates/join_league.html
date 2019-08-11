@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/unknown_user.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+    <main class="container">
+        <div class="box col-xs-12 col-md-8">
+            <h1>Join League</h1>
+            <a href="{{ url_for('create_league') }}" style="font-size: larger; color: #af0000;">Create A League</a><br><br>
+            <div class="table-responsive">
+                <table class="table table-bordered sif-table">
+                    <thead>
+                        <tr>
+                            <th>League</th>
+                            <th>Members</th>
+                            <th>Private?</th>
+                            <th>Owner</th>
+                            <th>Join</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in leagues %}
+                        <tr>
+                            <td>{{ row.league_name }}</td>
+                            <td>{{ row.members_cnt }}</td>
+                            <td>{{ row.is_private }}</td>
+                            <td>{{ row.owner }}</td>
+                            <td>
+                            {% if row.is_member == "No" and row.is_private == "No" %}
+                                <form method="POST" action="/join_league">
+                                    <input type="hidden" name="league_id" value="{{ row.league_id }}">
+                                    <button class="btn btn-success btn-sm btn-block" type="submit">Join</button>
+                                </form>
+                            {% elif row.is_member == "No" %}
+                                <form>
+                                    <input type="hidden" name="league_id" value="{{ row.league_id }}">
+                                    <a href="{{ url_for('show_league', league_id=row.league_id) }}" class="btn btn-success btn-sm btn-block">Join</a>
+                                </form>
+                            {% else  %}
+                                <button type="button" class="btn btn-success btn-sm btn-block disabled">
+                                  <span class="glyphicon glyphicon-ok"></span> Enrolled
+                                </button>
+                            {% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
