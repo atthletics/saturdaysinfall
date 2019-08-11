@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+
+    <div class="row">
+        <div class="box">
+
+            <div class="col-lg-3 col-left hidden-xs">
+                 <div class="main-col" style="height: 320px;">
+                    <h2 class="text-center">Quick Links:</h2>
+                    <a href="{{ url_for('profile') }}"  class="btn btn-primary btn-lg btn-block">My Profile</a><br>
+                    <a href="{{ url_for('league') }}"  class="btn btn-primary btn-lg btn-block">My Leagues</a><br>
+                    <a href="{{ url_for('squad') }}" class="btn btn-primary btn-lg btn-block">My Squad</a><br>
+                    <a href="{{ url_for('join_league') }}" class="btn btn-secondary btn-lg btn-block">Join/Create League</a><br>
+                </div>
+            </div>
+
+            <div class="col-lg-9 col-right">
+                <div class="main-col">
+
+                <!-- Swiper -->
+                <div class="swiper-container">
+                    <div class="swiper-wrapper">
+
+                        {% for row in articles %}
+                        {% if row.slide_id != 0 %}
+                        <div class="swiper-slide">
+                            <a href="{{ url_for('show_article', article=row.article_file) }}">
+                                <div class="article">
+                                    <span class="article-text">
+                                        <h2>{{ row.article_name }}</h2>
+                                        <p>{{ row.article_desc }}</p>
+                                    </span>
+                                    {% if row.slide_id == 1 %}
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_ball.jpg') }}" alt="">
+                                    {% elif row.slide_id == 2 %}
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_line.jpg') }}" alt="">
+                                    {% elif row.slide_id == 3 %}
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_name.jpg') }}" alt="">
+                                    {% elif row.slide_id == 4 %}
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_catch.jpg') }}" alt="">
+                                    {% elif row.slide_id == 5 %}
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_team.jpg') }}" alt="">
+                                    {% endif %}
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                    <!-- Add Arrows -->
+                    <div class="swiper-button-next swiper-button-white hidden-xs"></div>
+                    <div class="swiper-button-prev swiper-button-white hidden-xs"></div>
+                </div>
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="box">
+            <div class="col-lg-12">
+
+                {% for row in articles %}
+                {% if row.slide_id == 0 %}
+
+                <div class="col-lg-3 col-md-4 col-xs-6">
+                  <div class="main-col sif-text">
+                    <a href="{{ url_for('show_article', article=row.article_file) }}">
+                        <h3>{{ row.article_name }}</h3>
+                        <p class="hidden-xs">{{ row.article_desc }}</p>
+                    </a>
+                  </div>
+                </div>
+
+                {% endif %}
+                {% endfor %}
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Initialize Swiper -->
+<script>
+    var swiper = new Swiper('.swiper-container', {
+      autoplay: 4500,
+      nextButton: '.swiper-button-next',
+      prevButton: '.swiper-button-prev',
+      slidesPerView: 'auto',
+      centeredSlides: true,
+      spaceBetween: 10,
+      loop: true,
+    });
+</script>
+{% endblock %}
