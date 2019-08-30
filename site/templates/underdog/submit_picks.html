@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+    <style>
+    body {
+        background: url("{{ url_for('static', filename='img/trophy.jpg') }}");
+        background-repeat: no-repeat;
+        background-position: bottom right;
+        background-attachment: fixed;
+        background-color: #000;
+        -webkit-background-size: 60%;
+        -moz-background-size: 60%;
+        background-size: auto 60%;
+        -o-background-size: 60%;
+    }
+    </style>
+
+    <main class="container">
+        <div class="box col-xs-12 col-md-8">
+            <form method="POST" action="/submit_picks/{{ league_id }}">
+            <div class="table-responsive">
+                <table class="table table-bordered sif-table">
+                    <thead>
+                        <tr>
+                            <th>Underdog</th>
+                            <th>Spread</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                    {% for row in picks %}
+                        <tr>
+                            <input type="hidden" name="pick" value="{{ row.game_id }}" />
+                            <input type="hidden" name="week" value="{{ row.week_id }}" />
+                            <td>{{ row.underdog }}</td>
+                            <td>{{ row.spread }}</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <br>
+                <h3>Special (2x):</h3>
+                <div class="mainselection">
+                    {% if special is none %}
+                        <select name="special">
+                            <option value="0">None</option>
+                            {% for team in picks %}
+                                {% if team.is_special == 'Y' %}
+                                    <option name="special" value="{{ team.game_id }}" selected>{{ team.underdog }}</option>
+                                {% elif team.is_locked == 'N' %}
+                                    <option value="{{ team.game_id }}">{{ team.underdog }}</option>
+                                {% endif %}
+                            {% endfor %}
+                        </select>
+                    {% else %}
+                        <select name="special">
+                            <option name="special" value="{{ special.game_id }}">{{ special.underdog }}</option>
+                        </select>
+                    {% endif %}
+                </div>
+                <br><br>
+                <button class="btn btn-danger btn-sm btn-block" type="submit">Submit</button><br>
+            </form>
+            </div>
+        </div>
+    </main>
+
+{% endblock %}
