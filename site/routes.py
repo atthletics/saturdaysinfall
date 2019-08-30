@@ -1,20 +1,24 @@
 from flask import Flask, render_template, request, session, redirect, url_for
 from forms import SignupForm, SigninForm, SubmitEmail, PwdEmail, PwdSession
-from forms import ProfileForm, CreateLeague, CreateSquad, LeagueProfile, LeaguePwd
+from forms import ProfileForm, CreateLeague, CreateSquad, LeaguePwd, SquadPwd
 import smtplib, os, random, string
-from models import db, User, League, LeagueUser, Team, Squad
+from models import db, User, League, LeagueUser, Squad
 
 app = Flask(__name__)
 APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_STATIC = os.path.join(APP_ROOT, 'static')
 APP_TEMPLATE = os.path.join(APP_ROOT, 'template')
 
-app.config["DEBUG"] = True
-SQLALCHEMY_DATABASE_URI = 
+SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
+    username="atthletics",
+    password="gK4aW##VS5!Qege2y7*m",
+    hostname="atthletics.mysql.pythonanywhere-services.com",
+    databasename="atthletics$mysql",
+)
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
-app.config["DEBUG"] = True
+app.config["DEBUG"] = False
 db.init_app(app)
 
 # ---------------- #
@@ -108,7 +112,12 @@ def signin():
             email = login.email.data
             password = login.password.data
             user = User.query.filter_by(email=email).first()
-            if user.pwdhash == 'FORCE_RESET':
+            if not user:
+                e = list(login.email.errors)
+                e.append('Invalid email.')
+                login.email.errors = tuple(e)
+                return render_template('users/signin.html', form=login)
+            elif user.pwdhash == 'FORCE_RESET':
                 token = SubmitEmail()
                 force_reset = """
                     We need you to reset your password.
@@ -144,7 +153,7 @@ def password_reset():
                 current = known.current.data
                 new = known.new.data
                 user = User.query.filter_by(user_id=int(session['user_id'])).first()
-                newPwd = User(user.first_name, user.last_name, user.email, new, user.favorite_team)
+                newPwd = User(user.first_name, user.last_name, user.email, new, )
                 if user.check_password(current):
                     User.query.filter_by(user_id=int(session['user_id'])).update( dict(pwdhash=newPwd.pwdhash, reset_token=None) )
                     db.session.commit()
@@ -167,7 +176,7 @@ def password_reset():
                 valid = unknown.reset_token.data
                 password = unknown.password.data
                 user = User.query.filter_by(email=email, reset_token=valid).first()
-                newPwd = User(user.first_name, user.last_name, user.email, password, user.favorite_team)
+                newPwd = User(user.first_name, user.last_name, user.email, user.username, password)
                 if user is not None:
                     User.query.filter_by(email=email).update( dict(pwdhash=newPwd.pwdhash, reset_token=None) )
                     db.session.commit()
@@ -216,8 +225,8 @@ def reset_token():
                     server = smtplib.SMTP('smtp.gmail.com', 587)
                     server.ehlo()
                     server.starttls()
-                    server.login('saturdaysinfall@gmail.com', 'SIF_2017_admin')
-                    sender = 'DoNotReply@SaturdaysInFall.com'
+                    server.login('atthletics@gmail.com', 'Pk%&ZYYsGN&OrtTya5Zp')
+                    sender = 'DoNotReply@atthletics.com'
                     receivers = [email]
                     message = """
 Hello %s,
@@ -229,7 +238,7 @@ After sending this, we redirected you to the reset page. Just paste that token i
 If you did not request this token, or requested by accident, you can ignore this email!
 
 If you need help, do not reply to this email. This is our monitored email:
-SaturdaysInFall@gmail.com
+atthletics@gmail.com
                     """ % (username, usertoken)
                     server.sendmail(sender, receivers, message)
                     server.quit()
@@ -271,7 +280,7 @@ def profile():
             where
                 user_id = :user
         """, {'user': int(session['user_id'])})
-        user=qry.first()
+        user = qry.first()
 
         # profile form
         profile.first_name.default = user.first_name
@@ -339,17 +348,8 @@ def squad():
         return redirect(url_for('signin'))
 
     # squad check query
-    qry = db.session.execute("""
-        select
-          squad_id
-        from users
-        where
-          user_id = :user
-    """
-    , {'user': int(session['user_id'])})
-    chk=qry.first()
-
-    if chk.squad_id == 1:
+    user = User.query.filter_by(user_id=int(session['user_id'])).first()
+    if user.squad_id == 1:
         # free agent query
         fa = db.session.execute("""
             select
@@ -371,10 +371,11 @@ def squad():
             ) m
               on s.squad_id = m.squad_id
         """)
-        return render_template('join_squad.html', squads=fa.fetchall(), squad_id=chk.squad_id)
+        return render_template('join_squad.html', squads=fa.fetchall(), squad_id=user.squad_id)
 
     else:
         # member query
+        squad = Squad.query.filter_by(squad_id=user.squad_id).first()
         mbr = db.session.execute("""
             select
                 user_id,
@@ -385,8 +386,37 @@ def squad():
             where
               squad_id = :squad
         """
-        , {'squad': chk.squad_id})
-        return render_template('squad.html', squads=mbr.fetchall(), squad_id=chk.squad_id)
+        , {'squad': user.squad_id})
+        return render_template('squad.html', members=mbr.fetchall(), squad_name=squad.squad_name)
+
+@app.route('/squad_profile/<int:squad_id>', methods=['GET','POST'])
+def squad_profile(squad_id):
+    # must be signed in
+    if 'user_id' not in session:
+        return redirect(url_for('signin'))
+
+    password_form = SquadPwd()
+    # get squad data
+    squad = Squad.query.filter_by(squad_id=int(squad_id)).first()
+    if request.method == "GET":
+        return render_template('squad_profile.html',
+            form=password_form,
+            squad_id=squad.squad_id,
+            squad_name=squad.squad_name)
+
+    elif request.method == "POST":
+        if squad.squad_pwd == password_form.password.data:
+            User.query.filter_by(user_id=int(session['user_id'])).update( dict(squad_id = squad.squad_id) )
+            db.session.commit()
+            return redirect(url_for('index'))
+        else:
+            e = list(password_form.password.errors)
+            e.append('The password was incorrect.')
+            password_form.password.errors = tuple(e)
+            return render_template("squad_profile.html",
+                form=password_form,
+                squad_id=squad.squad_id,
+                squad_name=squad.squad_name)
 
 @app.route('/leave_squad', methods=['POST'])
 def leave_squad():
@@ -419,15 +449,7 @@ def create_league():
                 newLeague = League(league.league_name.data, league.league_pwd.data, int(session['user_id']))
                 db.session.add(newLeague)
                 db.session.commit()
-                qry = db.session.execute("""
-                    select
-                        l.league_id
-                    from leagues l
-                    where
-                        l.league_name = :league
-                """
-                , {'league': league.league_name.data})
-                lid=qry.first()
+                lid = League.query.filter_by(league_name=league.league_name.data).first()
 
                 # add users
                 addUser = LeagueUser(lid.league_id, int(session['user_id']))
@@ -466,98 +488,35 @@ def league():
     , {'user': int(session['user_id'])})
     return render_template('league.html', leagues=qry.fetchall())
 
-@app.route('/league/<int:league_id>', methods=['GET','POST'])
-def show_league(league_id):
+@app.route('/league_profile/<int:league_id>', methods=['GET','POST'])
+def league_profile(league_id):
     # must be signed in
     if 'user_id' not in session:
         return redirect(url_for('signin'))
 
-    profile = LeagueProfile()
-    join = LeaguePwd()
+    password_form = LeaguePwd()
     # get league data
-    qry = db.session.execute("""
-        select
-            l.league_id,
-            l.league_name,
-            l.league_pwd,
-            u.email as league_owner,
-            l.create_ts,
-            max(if(su.user_id is null, 'N', 'Y')) as is_member,
-            count(lu.user_id) as members_cnt
-        from leagues l
-        inner join users u
-          on l.owner_id = u.user_id
-        inner join leagues_users lu
-          on l.league_id = lu.league_id
-        left join users su
-          on lu.user_id = su.user_id
-          and su.user_id = :user
-        where
-            l.league_id = :league
-        group by
-            l.league_id,
-            l.league_name,
-            l.league_pwd,
-            u.email,
-            l.create_ts
-    """
-    , {'user': int(session['user_id']), 'league': league_id})
-    league=qry.first()
+    league = League.query.filter_by(league_id=int(league_id)).first()
+    if request.method == "GET":
+        return render_template('league_profile.html',
+            form=password_form,
+            league_id=league.league_id,
+            league_name=league.league_name)
 
-    # profile form
-    profile.league_id.default = league.league_id
-    profile.league_name.default = league.league_name
-    profile.league_owner.default = league.league_owner
-    profile.create_ts.default = league.create_ts
-    profile.members_cnt.default = league.members_cnt
-    profile.process()
-
-    # private leagues
-    if request.method == 'POST':
-        private = League.query.filter_by(league_id=league_id).first()
-
-        if private.league_pwd == join.password.data:
-            addUser = LeagueUser(league_id, int(session['user_id']))
-            db.session.add(addUser)
+    elif request.method == "POST":
+        if league.league_pwd == password_form.password.data:
+            league_user = LeagueUser(league.league_id, int(session['user_id']))
+            db.session.add(league_user)
             db.session.commit()
-
-            # league query
-            qry = db.session.execute("""
-                select
-                    l.league_id,
-                    l.league_name,
-                    u.email as owner,
-                    lu.entrant_id
-                from leagues_users lu
-                inner join leagues l
-                  on lu.league_id = l.league_id
-                inner join users u
-                  on l.owner_id = u.user_id
-                where lu.user_id = :user
-            """
-            , {'user': int(session['user_id'])})
-            return render_template('league.html', leagues=qry.fetchall())
+            return redirect(url_for('index'))
         else:
-            e = list(join.password.errors)
+            e = list(password_form.password.errors)
             e.append('The password was incorrect.')
-            join.password.errors = tuple(e)
-            return render_template("league_users/profile.html", form=profile, join=join, league=league_id)
-
-    elif request.method == 'GET':
-        # check if enrolled
-        enrolled = db.session.execute("""
-            select 1
-            from leagues_users
-            where
-                user_id = :user
-                and league_id = :league
-        """
-        , {'user': int(session['user_id']), 'league': league_id})
-
-        if enrolled.rowcount == 0:
-            return render_template("league_users/profile.html", form=profile, join=join, league=league_id)
-        else:
-            return render_template("league_users/profile.html", form=profile, league=league_id)
+            password_form.password.errors = tuple(e)
+            return render_template("league_profile.html",
+                form=password_form,
+                league_id=league.league_id,
+                league_name=league.league_name)
 
 @app.route('/join_league', methods=['GET', 'POST'])
 def join_league():
@@ -593,8 +552,8 @@ def join_league():
         return render_template('join_league.html', leagues=qry.fetchall())
 
     elif request.method == 'POST':
-        addUser = LeagueUser(int(request.form['league_id']), int(session['user_id']))
-        db.session.add(addUser)
+        league_user = LeagueUser(int(request.form['league_id']), int(session['user_id']))
+        db.session.add(league_user)
         db.session.commit()
 
         # league query
@@ -614,71 +573,292 @@ def join_league():
         , {'user': int(session['user_id'])})
         return render_template('league.html', leagues=qry.fetchall())
 
-
 # ---------------- #
 # Standings Routes #
 # ---------------- #
 
-@app.route('/standings/<int:league_id>', methods=['GET'])
+@app.route('/standings/<int:league_id>', methods=['GET','POST'])
 def standings(league_id):
     # must be signed in
     if 'user_id' not in session:
         return redirect(url_for('signin'))
 
+    if request.method == 'GET':
+        league = League.query.filter_by(league_id=league_id).first()
+        scores = db.session.execute("""
+            select
+              *, cast(@rank := @rank + 1 as char) AS rank
+            from (
+                select
+                    lu.user_id,
+                    u.username,
+                    ifnull(sum(if(s.is_upset = True, s.spread, 0)),0) as score,
+                    ifnull(count(if(s.is_upset = True, s.game_id, null)),0) as picks
+                from leagues_users lu
+                inner join users u
+                  on lu.user_id = u.user_id
+                left join ud_picks p
+                  on lu.user_id = p.user_id
+                  and p.is_invalid = False
+                left join ud_games g
+                  on p.game_id = g.game_id
+                left join ud_spreads s
+                  on g.game_id = s.game_id
+                where
+                  lu.league_id = 1
+                group by
+                    lu.user_id,
+                    u.username
+                order by 3 desc, 4 desc, 2
+            ) scores
+            cross join (SELECT @rank := 0) r
+        """
+        , {'league': league_id})
+        return render_template('standings.html', standing=scores.fetchall(), user_id=session['user_id'],
+                                league_id=league_id, league_name=league.league_name, week=0)
 
-    return render_template("standings.html", league_id=league_id)
+    elif request.method == 'POST':
+        week = int(request.form.get('week'))
+        league = League.query.filter_by(league_id=league_id).first()
 
+        if week == 0:
+            scores = db.session.execute("""
+                select
+                  *, cast(@rank := @rank + 1 as char) AS rank
+                from (
+                    select
+                        lu.user_id,
+                        u.username,
+                        ifnull(sum(if(s.is_upset = True, s.spread, 0)),0) as score,
+                        ifnull(count(if(s.is_upset = True, s.game_id, null)),0) as picks
+                    from leagues_users lu
+                    inner join users u
+                      on lu.user_id = u.user_id
+                    left join ud_picks p
+                      on lu.user_id = p.user_id
+                      and p.is_invalid = False
+                    left join ud_games g
+                      on p.game_id = g.game_id
+                    left join ud_spreads s
+                      on g.game_id = s.game_id
+                    where
+                      lu.league_id = 1
+                    group by
+                        lu.user_id,
+                        u.username
+                    order by 3 desc, 4 desc, 2
+                ) scores
+                cross join (SELECT @rank := 0) r
+            """
+            , {'league': league_id})
+        else:
+            scores = db.session.execute("""
+                select
+                  user_id,
+                  username,
+                  sum(
+                    case
+                      when is_upset = True and is_special = True then spread*2
+                      when is_upset = True then spread
+                      else 0
+                    end
+                  ) as total_points,
+
+                  max(
+                    case
+                      when pick_number = 1 and is_special = True
+                        then concat(underdog, ': ', spread * 2, ' (special)')
+                      when pick_number = 1
+                        then concat(underdog, ': ', spread)
+                      else null
+                    end
+                  ) as pick_1,
+                  max(
+                    case
+                      when pick_number = 1 and is_upset = True then 1
+                      else 0
+                    end
+                  ) as p1_upset,
+
+                  max(
+                    case
+                      when pick_number = 2 and is_special = True
+                        then concat(underdog, ': ', spread * 2, ' (special)')
+                      when pick_number = 2
+                        then concat(underdog, ': ', spread)
+                      else null
+                    end
+                  ) as pick_2,
+                  max(
+                    case
+                      when pick_number = 2 and is_upset = True then 1
+                      else 0
+                    end
+                  ) as p2_upset,
+
+                  max(
+                    case
+                      when pick_number = 3 and is_special = True
+                        then concat(underdog, ': ', spread * 2, ' (special)')
+                      when pick_number = 3
+                        then concat(underdog, ': ', spread)
+                      else null
+                    end
+                  ) as pick_3,
+                  max(
+                    case
+                      when pick_number = 3 and is_upset = True then 1
+                      else 0
+                    end
+                  ) as p3_upset,
+
+                  max(
+                    case
+                      when pick_number = 4 and is_special = True
+                        then concat(underdog, ': ', spread * 2, ' (special)')
+                      when pick_number = 4
+                        then concat(underdog, ': ', spread)
+                      else null
+                    end
+                  ) as pick_4,
+                  max(
+                    case
+                      when pick_number = 4 and is_upset = True then 1
+                      else 0
+                    end
+                  ) as p4_upset,
+
+                  max(
+                    case
+                      when pick_number = 5 and is_special = True
+                        then concat(underdog, ': ', spread * 2, ' (special)')
+                      when pick_number = 5
+                        then concat(underdog, ': ', spread)
+                      else null
+                    end
+                  ) as pick_5,
+                  max(
+                    case
+                      when pick_number = 5 and is_upset = True then 1
+                      else 0
+                    end
+                  ) as p5_upset
+
+                from (
+                    select
+                        p.user_id,
+                        u.username,
+                        r.pick_number,
+                        t.espn_team_name as underdog,
+                        coalesce(s.spread, 0) as spread,
+                        s.is_upset,
+                        p.is_special
+                    from ud_picks p
+                    inner join users u
+                      on p.user_id = u.user_id
+                    inner join (
+                        select
+                            a.user_id,
+                            a.pick_id,
+                            count(*) AS pick_number
+                        from ud_picks a
+                        inner join ud_picks b
+                          on a.user_id = b.user_id
+                          and a.pick_id >= b.pick_id
+                          and b.league_id = :league
+                          and b.is_invalid = False
+                        where
+                          a.is_invalid = False
+                          and a.league_id = :league
+                        group by
+                          a.user_id,
+                          a.pick_id
+                    ) r
+                      on r.pick_id = p.pick_id
+                    inner join ud_games g
+                      on p.game_id = g.game_id
+                    inner join ud_spreads s
+                      on g.game_id = s.game_id
+                    inner join teams t
+                      on s.team_id = t.atthletics_team_id
+                    where
+                      p.league_id = :league
+                      and g.week_id = :week
+                      and p.is_invalid = False
+                      and (
+                        date_add(now(), interval -4 hour) >= g.game_ts
+                        or p.user_id = :user
+                      )
+                ) picks
+
+                group by
+                  username,
+                  user_id
+                order by 3 desc
+            """
+            , {'league': league_id, 'week': int(week), 'user': session['user_id']})
+
+        return render_template('standings.html', standing=scores.fetchall(), user_id=session['user_id'],
+                                league_id=league_id, league_name=league.league_name, week=week)
 
 # ------------ #
 # Picks Routes #
 # ------------ #
 
-@app.route('/picks/<int:underdog_id>', methods=['GET', 'POST'])
-def picks(underdog_id):
+@app.route('/picks/<int:league_id>', methods=['GET', 'POST'])
+def picks(league_id):
     # must be signed in
     if 'user_id' not in session:
         return redirect(url_for('signin'))
 
     if request.method == 'GET':
-        # league query
-        game_qry = db.session.execute("""
+        games = db.session.execute("""
             select
                 g.game_id,
                 date_format(g.game_ts,"%W, %b. %e, %Y") as game_dt,
                 date_format(g.game_ts,"%r") as game_ts,
                 g.week_id,
-                t1.team_name as home_team,
+                t1.espn_team_name as home_team,
                 g.home_score,
-                t2.team_name as away_team,
+                t2.espn_team_name as away_team,
                 g.away_score,
                 g.is_final,
+                case
+                  when coalesce(s1.spread, s2.spread) is null then 'N/A'
+                  when coalesce(s1.spread, s2.spread) = 0 then 'EVEN'
+                  when s1.spread is not null then t1.espn_team_name
+                  else t2.espn_team_name
+                end as underdog,
                 if(date_add(now(), interval -4 hour) >= g.game_ts,'Y','N') as is_locked,
                 if(p.game_id is not null, 'Y','N') as picked,
-                if(p.is_special = 1, 'Y','N') as is_special
+                if(p.is_special = 1, 'Y','N') as is_special,
+                coalesce(s1.spread, s2.spread, 0) as spread
             from ud_games g
             inner join teams t1
-              on g.home_id = t1.team_id
+              on g.home_id = t1.atthletics_team_id
             inner join teams t2
-              on g.away_id = t2.team_id
+              on g.away_id = t2.atthletics_team_id
             left join ud_picks p
               on g.game_id = p.game_id
-              and underdog_id = :underdog_id
+              and p.user_id = :user
+              and p.league_id = :league
+              and p.is_invalid = False
             left join ud_spreads s1
               on g.game_id = s1.game_id
               and g.home_id = s1.team_id
             left join ud_spreads s2
               on g.game_id = s2.game_id
-              and g.home_id = s2.team_id
+              and g.away_id = s2.team_id
             where
               g.game_ts <> 0
               and (
-                date_add(now(), interval -4 hour) <= g.game_ts
-                or p.game_id is not null
-              )
+                date_add(now(), interval -4 hour) < g.game_ts
+                or p.game_id is not null)
             order by
+              p.game_id desc,
               g.game_ts
         """,
-        {'underdog_id': underdog_id})
+        {'league': league_id, 'user': session['user_id']})
 
         # week query
         week_qry = db.session.execute("""
@@ -686,10 +866,179 @@ def picks(underdog_id):
                 min(g.week_id) as week_id
             from ud_games g
             where
-              date_add(now(), interval -4 hour) <= g.game_ts
+              date_add(now(), interval -4 hour) < g.game_ts
         """)
         current_week = week_qry.first()
-        return render_template("underdog/picks.html", games=game_qry.fetchall(), default=current_week.week_id)
+        return render_template("underdog/picks.html", games=games.fetchall(), default=current_week.week_id, league_id=league_id)
+
+    elif request.method == 'POST':
+        pick_list = request.form.getlist('pick')
+        picks = { i : pick_list[i] for i in range(0, len(pick_list) ) }
+
+        locked_special = db.session.execute("""
+            select
+              p.game_id,
+              case
+                when coalesce(s1.spread, s2.spread) is null then 'N/A'
+                when coalesce(s1.spread, s2.spread) = 0 then 'EVEN'
+                when s1.spread is not null then t1.espn_team_name
+                else t2.espn_team_name
+              end as underdog
+            from ud_picks p
+            inner join ud_games g
+              on p.game_id = g.game_id
+            inner join teams t1
+              on g.home_id = t1.atthletics_team_id
+            inner join teams t2
+              on g.away_id = t2.atthletics_team_id
+            left join ud_spreads s1
+              on g.game_id = s1.game_id
+              and g.home_id = s1.team_id
+            left join ud_spreads s2
+              on g.game_id = s2.game_id
+              and g.away_id = s2.team_id
+            where
+              p.user_id = :user
+              and p.league_id = :league
+              and p.is_special = 1
+              and p.is_invalid = False
+              and date_add(now(), interval -4 hour) >= g.game_ts
+        """,
+        {'league': league_id, 'user': session['user_id']}).first()
+
+        games = db.session.execute("""
+            select
+                g.game_id,
+                date_format(g.game_ts,"%W, %b. %e, %Y") as game_dt,
+                date_format(g.game_ts,"%r") as game_ts,
+                g.week_id,
+                t1.espn_team_name as home_team,
+                g.home_score,
+                t2.espn_team_name as away_team,
+                g.away_score,
+                g.is_final,
+                case
+                  when coalesce(s1.spread, s2.spread) is null then 'N/A'
+                  when coalesce(s1.spread, s2.spread) = 0 then 'EVEN'
+                  when s1.spread is not null then t1.espn_team_name
+                  else t2.espn_team_name
+                end as underdog,
+                if(date_add(now(), interval -4 hour) >= g.game_ts,'Y','N') as is_locked,
+                if(p.is_special = 1, 'Y','N') as is_special,
+                coalesce(s1.spread, s2.spread, 0) as spread
+            from ud_games g
+            inner join teams t1
+              on g.home_id = t1.atthletics_team_id
+            inner join teams t2
+              on g.away_id = t2.atthletics_team_id
+            left join ud_picks p
+              on g.game_id = p.game_id
+              and p.user_id = :user
+              and p.league_id = :league
+              and p.is_invalid = False
+            left join ud_spreads s1
+              on g.game_id = s1.game_id
+              and g.home_id = s1.team_id
+            left join ud_spreads s2
+              on g.game_id = s2.game_id
+              and g.away_id = s2.team_id
+            where
+              g.game_id in (:p1, :p2, :p3, :p4, :p5)
+              and date_add(now(), interval -4 hour) < g.game_ts
+            order by
+              g.game_ts
+        """,
+        {'league': league_id, 'user': session['user_id'],
+            'p1': picks.get(0, 0),
+            'p2': picks.get(1, 0),
+            'p3': picks.get(2, 0),
+            'p4': picks.get(3, 0),
+            'p5': picks.get(4, 0)})
+        return render_template("underdog/submit_picks.html", picks=games.fetchall(), league_id=league_id, special=locked_special)
+
+@app.route('/submit_picks/<int:league_id>', methods=['POST'])
+def submit_picks(league_id):
+    # must be signed in
+    if 'user_id' not in session:
+        return redirect(url_for('signin'))
+
+    week = request.form.getlist('week')[0]
+    special = request.form.get('special')
+    pick_list = request.form.getlist('pick')
+    picks = { i : pick_list[i] for i in range(0, len(pick_list) ) }
+    db.session.execute("""
+        update ud_picks
+          set
+            is_invalid = True
+        where pick_id in (
+            select
+              p.pick_id
+            from (
+                select
+                  pick_id,
+                  game_id
+                from ud_picks
+                where
+                  user_id = :user
+                  and league_id = :league
+                  and is_invalid = False
+            ) p
+            inner join ud_games g
+              on p.game_id = g.game_id
+            where
+              g.week_id = :week
+              and date_add(now(), interval -4 hour) < g.game_ts)
+    """,{'league': league_id, 'user': session['user_id'], 'week': week,
+        'p1': picks.get(0, 0),
+        'p2': picks.get(1, 0),
+        'p3': picks.get(2, 0),
+        'p4': picks.get(3, 0),
+        'p5': picks.get(4, 0)})
+    db.session.commit()
+
+    db.session.execute("""
+        insert into ud_picks
+            (league_id, user_id, game_id, is_special)
+        values
+            (:league, :user, :p1, False),
+            (:league, :user, :p2, False),
+            (:league, :user, :p3, False),
+            (:league, :user, :p4, False),
+            (:league, :user, :p5, False)
+    """,{'league': league_id, 'user': session['user_id'],
+        'p1': picks.get(0, 0),
+        'p2': picks.get(1, 0),
+        'p3': picks.get(2, 0),
+        'p4': picks.get(3, 0),
+        'p5': picks.get(4, 0)})
+    if int(special) != 0:
+        db.session.execute("""
+            update ud_picks
+                set is_special = True
+            where
+              game_id = :special
+              and user_id = :user
+              and league_id = :league
+              and is_invalid = False
+        """,{'league': league_id, 'user': session['user_id'], 'special': special})
+    db.session.commit()
+
+    # league query
+    leagues = db.session.execute("""
+        select
+            l.league_id,
+            l.league_name,
+            u.email as owner,
+            lu.entrant_id
+        from leagues_users lu
+        inner join leagues l
+          on lu.league_id = l.league_id
+        inner join users u
+          on l.owner_id = u.user_id
+        where lu.user_id = :user
+    """
+    , {'user': int(session['user_id'])})
+    return render_template('league.html', leagues=leagues.fetchall())
 
 # -------------- #
 # Article Routes #
