@@ -2,6 +2,20 @@
 
 {% block content %}
 
+<style>
+body {
+    background: url("{{ url_for('static', filename='img/helmet.jpg') }}");
+    background-repeat: no-repeat;
+    background-position: bottom right;
+    background-attachment: fixed;
+    background-color: #000;
+    -webkit-background-size: 60%;
+    -moz-background-size: 60%;
+    background-size: auto 60%;
+    -o-background-size: 60%;
+}
+</style>
+
 <div class="container">
 
     <div class="row">
@@ -34,15 +48,15 @@
                                         <p>{{ row.article_desc }}</p>
                                     </span>
                                     {% if row.slide_id == 1 %}
-                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_ball.jpg') }}" alt="">
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/slider/writer.jpeg') }}" alt="">
                                     {% elif row.slide_id == 2 %}
-                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_line.jpg') }}" alt="">
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/slider/2018.jpeg') }}" alt="">
                                     {% elif row.slide_id == 3 %}
-                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_name.jpg') }}" alt="">
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/slider/2017.jpeg') }}" alt="">
                                     {% elif row.slide_id == 4 %}
-                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_catch.jpg') }}" alt="">
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/chalkboard.jpg') }}" alt="">
                                     {% elif row.slide_id == 5 %}
-                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/article/slide_team.jpg') }}" alt="">
+                                        <img class="img-responsive img-full" src="{{ url_for('static', filename='img/chalkboard.jpg') }}" alt="">
                                     {% endif %}
                                 </div>
                             </a>
