@@ -4,14 +4,14 @@
 
     <style>
     body {
-        background: url("{{ url_for('static', filename='img/unknown_user.jpg') }}");
+        background: url("{{ url_for('static', filename='img/trophy.jpg') }}");
         background-repeat: no-repeat;
         background-position: bottom right;
         background-attachment: fixed;
         background-color: #000;
         -webkit-background-size: 60%;
         -moz-background-size: 60%;
-        background-size: 60%;
+        background-size: auto 60%;
         -o-background-size: 60%;
     }
     </style>
@@ -25,8 +25,7 @@
                         <tr>
                             <th>League</th>
                             <th>Standings</th>
-                            <th>Picks</th>
-                            <th>Profile</th>
+                            <th>My Picks</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -39,13 +38,8 @@
                                 </form>
                             </td>
                             <td>
-                                <form method="GET" action="/picks/{{ row.underdog_id }}">
+                                <form method="GET" action="/picks/{{ row.league_id }}">
                                     <button class="btn btn-danger btn-sm btn-block" type="submit">View</button>
-                                </form>
-                            </td>
-                            <td>
-                                <form method="GET" action="/league/{{ row.league_id }}">
-                                    <button class="btn btn-warning btn-sm btn-block" type="submit">View</button>
                                 </form>
                             </td>
                         </tr>
