@@ -4,22 +4,131 @@
 
     <style>
     body {
-        background: url("{{ url_for('static', filename='img/unknown_user.jpg') }}");
+        background: url("{{ url_for('static', filename='img/trophy.jpg') }}");
         background-repeat: no-repeat;
         background-position: bottom right;
         background-attachment: fixed;
         background-color: #000;
         -webkit-background-size: 60%;
         -moz-background-size: 60%;
-        background-size: 60%;
+        background-size: auto 60%;
         -o-background-size: 60%;
     }
     </style>
 
-    <main class="container signup-section">
-        <div class="box col-xs-12 col-md-6 col-lg-4">
-            <p>standing {{ league_id }}</p>
+    <main class="container">
+        <div class="box col-xs-12 col-md-8">
+            <h1>{{ league_name }}</h1>
 
+                <form name="week" method="POST">
+                    <select name="week">
+                        <option value="0">Overall</option>
+                        <option value="1">Week 1</option>
+                        <option value="2">Week 2</option>
+                        <option value="3">Week 3</option>
+                        <option value="4">Week 4</option>
+                        <option value="5">Week 5</option>
+                        <option value="6">Week 6</option>
+                        <option value="7">Week 7</option>
+                        <option value="8">Week 8</option>
+                        <option value="9">Week 9</option>
+                        <option value="10">Week 10</option>
+                        <option value="11">Week 11</option>
+                        <option value="12">Week 12</option>
+                        <option value="13">Week 13</option>
+                        <option value="14">Week 14</option>
+                    </select>
+                    <button type="submit">Go</button>
+                </form><br>
+
+                <div class="table-responsive">
+                    <table class="table table-bordered sif-table">
+                        {% if week == 0 %}
+                            <thead>
+                                <tr>
+                                    <th>Rank</th>
+                                    <th>Username</th>
+                                    <th>Score</th>
+                                    <th>Picks</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in standing %}
+                                {% if row.user_id == user_id %}
+                                    <tr style="color: black; background-color: #ffdd76;">
+                                        <td>{{ row.rank }}</td>
+                                        <td>{{ row.username }}</td>
+                                        <td>{{ row.score }}</td>
+                                        <td>{{ row.picks }}</td>
+                                    </tr>
+                                {% else %}
+                                    <tr>
+                                        <td>{{ row.rank }}</td>
+                                        <td>{{ row.username }}</td>
+                                        <td>{{ row.score }}</td>
+                                        <td>{{ row.picks }}</td>
+                                    </tr>
+                                {% endif %}
+                            {% endfor %}
+                            </tbody>
+                        {% else %}
+                            <thead>
+                                <tr>
+                                    <th>Username</th>
+                                    <th>Points</th>
+                                    <th>Pick 1</th>
+                                    <th>Pick 2</th>
+                                    <th>Pick 3</th>
+                                    <th>Pick 4</th>
+                                    <th>Pick 5</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                            {% for row in standing %}
+                                <tr>
+                                    {% if row.user_id == user_id %}
+                                        <td style="color: black; background-color: #ffdd76;">{{ row.username }}</td>
+                                        <td style="color: black; background-color: #ffdd76;">{{ row.total_points }}</td>
+                                    {% else %}
+                                        <td>{{ row.username }}</td>
+                                        <td>{{ row.total_points }}</td>
+                                    {% endif %}
+
+                                    {% if row.p1_upset == 1 %}
+                                        <td style="color: black; background-color: #76d0a3;">{{ row.pick_1 }}</td>
+                                    {% else %}
+                                        <td>{{ row.pick_1 }}</td>
+                                    {% endif %}
+
+                                    {% if row.p2_upset == 1 %}
+                                        <td style="color: black; background-color: #76d0a3;">{{ row.pick_2 }}</td>
+                                    {% else %}
+                                        <td>{{ row.pick_2 }}</td>
+                                    {% endif %}
+
+                                    {% if row.p3_upset == 1 %}
+                                        <td style="color: black; background-color: #76d0a3;">{{ row.pick_3 }}</td>
+                                    {% else %}
+                                        <td>{{ row.pick_3 }}</td>
+                                    {% endif %}
+
+                                    {% if row.p4_upset == 1 %}
+                                        <td style="color: black; background-color: #76d0a3;">{{ row.pick_4 }}</td>
+                                    {% else %}
+                                        <td>{{ row.pick_4 }}</td>
+                                    {% endif %}
+
+                                    {% if row.p5_upset == 1 %}
+                                        <td style="color: black; background-color: #76d0a3;">{{ row.pick_5 }}</td>
+                                    {% else %}
+                                        <td>{{ row.pick_5 }}</td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        {% endif %}
+                    </table>
+                </div>
         </div>
     </main>
 
