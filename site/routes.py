@@ -9,12 +9,7 @@ APP_ROOT = os.path.dirname(os.path.abspath(__file__))
 APP_STATIC = os.path.join(APP_ROOT, 'static')
 APP_TEMPLATE = os.path.join(APP_ROOT, 'template')
 
-SQLALCHEMY_DATABASE_URI = "mysql+mysqlconnector://{username}:{password}@{hostname}/{databasename}".format(
-    username="atthletics",
-    password="gK4aW##VS5!Qege2y7*m",
-    hostname="atthletics.mysql.pythonanywhere-services.com",
-    databasename="atthletics$mysql",
-)
+SQLALCHEMY_DATABASE_URI = 
 app.config["SQLALCHEMY_DATABASE_URI"] = SQLALCHEMY_DATABASE_URI
 app.config["SQLALCHEMY_POOL_RECYCLE"] = 299
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -33,7 +28,7 @@ db.init_app(app)
 # 4. Execute load:
 #   - LOAD DATA LOCAL INFILE '/home/atthletics/site/static/files/ENTER_YOUR_FILE_NAME.csv' INTO TABLE users FIELDS TERMINATED BY ',' ENCLOSED BY '"' LINES TERMINATED BY '\r\n';
 
-app.secret_key = "ylMXtUR_-lKW$6KDCj#*W.+Jxe^%x#"
+app.secret_key = 
 
 # ------------------------ #
 # 1. Index                 #
