@@ -87,6 +87,11 @@ class CreateLeague(FlaskForm):
         Length(max=100, message="This field has a 100 character limit.")])
     submit = SubmitField('Create')
 
+class SquadPwd(FlaskForm):
+    password = StringField('Password:', validators=[
+        Length(max=100, message="This field has a 100 character limit.")])
+    submit = SubmitField('Join')
+
 class CreateSquad(FlaskForm):
     squad_name = StringField('League Name:', validators=[
         DataRequired("Please enter your league name."),
