@@ -78,3 +78,17 @@ class Team(db.Model):
         self.division = division
         self.primary_color = primary_color
         self.secondary_color = secondary_color
+
+class Pick(db.Model):
+    __tablename__ = 'picks'
+    pick_id = db.Column(db.Integer, primary_key = True)
+    league_id = db.Column(db.Integer)
+    user_id = db.Column(db.Integer)
+    game_id = db.Column(db.Integer)
+    is_special = db.Column(db.Boolean)
+
+    def __init__ (self, league_id, user_id, game_id, is_special):
+        self.league_id = league_id
+        self.user_id = user_id
+        self.game_id = game_id
+        self.is_special = is_special
