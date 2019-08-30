@@ -43,7 +43,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="{{ url_for('index') }}">Saturdays In Fall</a>
+        <a class="navbar-brand" href="{{ url_for('index') }}">@thletics</a>
       </div>
       <div id="navbar-collapse-1" class="navbar-collapse collapse">
         <ul class="nav navbar-nav">
@@ -56,6 +56,9 @@
                     </li>
                     <li>
                         <a href="{{ url_for('league') }}">My Leagues</a>
+                    </li>
+                    <li>
+                        <a href="{{ url_for('squad') }}">My Squad</a>
                     </li>
                     <li>
                         <a href="{{ url_for('create_league') }}">Create League</a>
@@ -89,7 +92,7 @@
 <footer class="footer text-center">
     <div class="footer-default">
         <div>
-            <p>@thletics.com | Copyright &copy; 2018<br>
+            <p>@thletics.com | Copyright &copy; 2019<br>
                 <a href="{{ url_for('help') }}">Contact Us </a>&bull;
                 <a href="{{ url_for('privacy') }}">Privacy Policy </a>&bull;
                 <a href="{{ url_for('terms') }}">Terms of Service</a>
