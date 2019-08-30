@@ -4,21 +4,21 @@
 
     <style>
     body {
-        background: url("{{ url_for('static', filename='img/profile.jpg') }}");
+        background: url("{{ url_for('static', filename='img/weight.jpg') }}");
         background-repeat: no-repeat;
         background-position: bottom right;
         background-attachment: fixed;
         background-color: #000;
         -webkit-background-size: 60%;
         -moz-background-size: 60%;
-        background-size: 60%;
+        background-size: auto 60%;
         -o-background-size: 60%;
     }
     </style>
 
     <main class="container">
         <div class="box col-xs-12 col-md-8">
-            <h1>Squad Profile</h1>
+            <h1>{{ squad_name }}</h1>
             <div class="table-responsive">
                 <table class="table table-bordered sif-table">
                     <thead>
@@ -29,7 +29,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                    {% for row in squads %}
+                    {% for row in members %}
                         <tr>
                             <td>{{ row.member }}</td>
                             <td>{{ row.username }}</td>
