@@ -4,14 +4,14 @@
 
     <style>
     body {
-        background: url("{{ url_for('static', filename='img/unknown_user.jpg') }}");
+        background: url("{{ url_for('static', filename='img/trophy.jpg') }}");
         background-repeat: no-repeat;
         background-position: bottom right;
         background-attachment: fixed;
         background-color: #000;
         -webkit-background-size: 60%;
         -moz-background-size: 60%;
-        background-size: 60%;
+        background-size: auto 60%;
         -o-background-size: 60%;
     }
     </style>
@@ -39,15 +39,15 @@
                             <td>{{ row.is_private }}</td>
                             <td>{{ row.owner }}</td>
                             <td>
-                            {% if row.is_member == "No" and row.is_private == "No" %}
+                            {% if row.is_private == "No" and row.is_member == "No" %}
                                 <form method="POST" action="/join_league">
                                     <input type="hidden" name="league_id" value="{{ row.league_id }}">
-                                    <button class="btn btn-success btn-sm btn-block" type="submit">Join</button>
+                                    <button class="btn btn-warning btn-sm btn-block" type="submit">Join</button>
                                 </form>
-                            {% elif row.is_member == "No" %}
+                            {% elif row.is_private == "Yes" and row.is_member == "No" %}
                                 <form>
                                     <input type="hidden" name="league_id" value="{{ row.league_id }}">
-                                    <a href="{{ url_for('show_league', league_id=row.league_id) }}" class="btn btn-success btn-sm btn-block">Join</a>
+                                    <a href="{{ url_for('league_profile', league_id=row.league_id) }}" class="btn btn-warning btn-sm btn-block">Join</a>
                                 </form>
                             {% else  %}
                                 <button type="button" class="btn btn-success btn-sm btn-block disabled">
